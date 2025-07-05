@@ -4,5 +4,5 @@ export class CreateUserDTO {
     @IsNotEmpty()
     name : string;
     @IsString() @IsNotEmpty()
-    type: string;
+    email: string;
 }

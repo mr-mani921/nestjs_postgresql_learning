@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [
-    { id: 1, name: 'mani', type: 'normal' },
-    { id: 2, name: 'raza', type: 'normal' },
-  ];
-
-  getAllUsers(): User[] {
-    return this.users;
-  }
-
-  private generateId(): number {
-    return this.users.length + 1;
+  getAllUsers() {
+    const users = prisma.user.findMany();
+    return users;
   }
   
 
-  registerUser(user: CreateUserDTO): User[] {
-    const id = this.generateId();
-    this.users.push({ id, ...user });
-    return this.users;
+  async registerUser(user: CreateUserDTO) {
+    try {
+
+      const newUser = await prisma.user.create({
+        data: {
+          name: user.name,
+          email: user.email
+        }
+      })
+      return newUser;
+    } catch (error) {
+      console.log("got an errro while trying to register user",error.message)
+      throw error;
+    }
   }
 }
