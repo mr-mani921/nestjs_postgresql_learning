@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserDTO } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Prisma, PrismaClient } from '@prisma/client';
@@ -16,21 +20,25 @@ export class UsersService {
     const user = await prisma.user.findUnique({
       where: { id },
     });
-    if(!user) {
-      throw new NotFoundException("User Not Found")
+    if (!user) {
+      throw new NotFoundException('User Not Found');
     }
     console.log('the user of id ', id, 'is', user);
     return user;
   }
 
   async deleteUser(id: number) {
-    const user = await prisma.user.delete({
-      where: {id}
-    });
-    if(!user) {
-      throw new NotFoundException("User Not Found");
+    try {
+      return await prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError)
+        if (error.code === 'P2025') {
+          throw new NotFoundException('User Not Found');
+        }
+      throw error;
     }
-    console.log("user deleted Successfuly")
   }
 
   async registerUser(user: UserDTO) {
